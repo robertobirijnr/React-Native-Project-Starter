@@ -10,18 +10,34 @@ import ScreenWrapper from '../components/ScreenWrapper';
 import { emailValidator } from '../core/helpers/emailValidator';
 import { passwordValidator } from '../core/helpers/passwordValidator';
 import BackButton from '../components/BackButton';
+import { loginUser } from '../api/auth-api';
+import GoogleLogin from '../components/GoogleLogin';
 
 export default function Login({ navigation }) {
     const [email, setEmail] = useState({ value: '', error: '' })
     const [password, setPassword] = useState({ value: '', error: '' })
+    const [loading, setLoading] = useState(false)
 
-    const loginHandler = () => {
+    const loginHandler = async () => {
         const emailError = emailValidator(email.value)
         const passwordError = passwordValidator(password.value)
         if (emailError || passwordError) {
             setEmail({ ...email, error: emailError })
             setPassword({ ...password, error: passwordError })
         }
+
+        setLoading(true)
+        const response = await loginUser({
+            email: email.value,
+            password: password.value
+        })
+
+        if (response.error) {
+            alert(response.error)
+        } else {
+            navigation.replace("Home")
+        }
+        setLoading(false)
 
     }
 
@@ -43,7 +59,7 @@ export default function Login({ navigation }) {
                     secureTextEntry
                     onChangeText={(text) => setPassword({ value: text, error: '' })}
                     label="Password" />
-                <Button onPress={loginHandler} mode="contained">Login</Button>
+                <Button loading={loading} onPress={loginHandler} mode="contained">Login</Button>
 
                 <View style={styles.row}>
                     <Text>Don't have an account ? </Text>
@@ -58,6 +74,8 @@ export default function Login({ navigation }) {
                         <Text style={styles.link}>Reset Password</Text>
                     </TouchableOpacity>
                 </View>
+
+                <GoogleLogin />
 
             </ScreenWrapper>
         </Provider>

@@ -12,13 +12,16 @@ import { passwordValidator } from '../core/helpers/passwordValidator';
 import BackButton from '../components/BackButton';
 import nameValidator from '../core/helpers/nameValidator';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import { signUpUser } from '../api/auth-api';
+import GoogleLogin from '../components/GoogleLogin';
 
 export default function Login({ navigation }) {
     const [name, setName] = useState({ value: '', error: '' })
     const [email, setEmail] = useState({ value: '', error: '' })
     const [password, setPassword] = useState({ value: '', error: '' })
+    const [loading, setLoading] = useState(false)
 
-    const loginHandler = () => {
+    const loginHandler = async () => {
         const emailError = emailValidator(email.value)
         const passwordError = passwordValidator(password.value)
         const nameError = nameValidator(name.value)
@@ -28,6 +31,20 @@ export default function Login({ navigation }) {
             setPassword({ ...password, error: passwordError })
             setName({ ...name, error: nameError })
         }
+
+        setLoading(true)
+        const response = await signUpUser({
+            name: name.value,
+            email: email.value,
+            password: password.value
+        })
+
+        if (response.error) {
+            alert(response.error)
+        } else {
+            navigation.replace("home")
+        }
+        setLoading(false)
 
     }
 
@@ -54,7 +71,7 @@ export default function Login({ navigation }) {
                     secureTextEntry
                     onChangeText={(text) => setPassword({ value: text, error: '' })}
                     label="Password" />
-                <Button onPress={loginHandler} mode="contained">Register</Button>
+                <Button loading={loading} onPress={loginHandler} mode="contained">Register</Button>
 
                 <View style={styles.row}>
                     <Text>Already have an account ? </Text>
@@ -62,6 +79,8 @@ export default function Login({ navigation }) {
                         <Text style={styles.link}>Login</Text>
                     </TouchableOpacity>
                 </View>
+
+                <GoogleLogin/>
 
             </ScreenWrapper>
         </Provider>
